@@ -1,28 +1,26 @@
 const Http = require('http');
 const port = 3001;
-const CFG = require("./config.js");
-const mysql = require('mysql')
-const DBClient = mysql.createPool({
-  connectionLimit : 10,
-  host: "karchnoe.francecentral.cloudapp.azure.com",
-  user: "jdarrort",
-  password: CFG.PWD,
-  database: 'jdarrort',
-  dateStrings: true
-});
 
+const { Client } = require('pg')
+const DBClient = new Client({
+    user: 'world',
+    host: 'localhost',
+    database: 'dvdrental',
+    password: 'world123'
+  });
+DBClient.connect();
 /*
 CREATE TABLE web_mock (
-  id int(10) unsigned NOT NULL AUTO_INCREMENT,
-	verb varchar(200),
+	id serial NOT NULL,
+	method varchar(200),
 	url_path varchar(2000),
 	url_full_path varchar(2000),
 	query_params text,
 	headers text,
 	body text,
-  date_insert timestamp NOT NULL DEFAULT current_timestamp() ,
-  PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4;
+	date_insert timestamp NOT NULL DEFAULT now(),
+	CONSTRAINT web_mock_pkey PRIMARY KEY (id)
+);
 */
 
 
@@ -33,6 +31,13 @@ const server = Http.createServer((request, response) => {
         request.body += chunk;
     })
     request.on('end', () => {
+      //end of data
+      console.log(request.url)
+
+      console.log("Method : " + request.method);
+      console.log("FullUrl : " + request.url);
+      //  console.log("Url : " + request.url);
+  
       var params = request.url.split("?");
       let path = params[0];
       let query_params = {};
@@ -48,22 +53,21 @@ const server = Http.createServer((request, response) => {
   
       console.log("PAth : " + path);
       console.log("QueryParams : " + JSON.stringify(query_params));
-      DBClient.query( 
-        `INSERT INTO web_mock (verb, url_path, url_full_path, query_params, headers, body) 
-        VALUES ( ?, ?, ?, ?, ?, ?) 
-      `,[
-        request.method,
-        path,
-        request.url,
-        JSON.stringify(query_params),
-        JSON.stringify(request.headers),
-        request.body
-      ],  function ( err, rows ){
-        if ( err ){
-            console.error("DB connection error : " + JSON.stringify(err) );
-        }
+      
+      DBClient.query("INSERT INTO web_mock (method, url_path, url_full_path, query_params, headers, body) VALUES ($1,$2,$3, $4, $5, $6)", [
+          request.method,
+          path,
+          request.url,
+          JSON.stringify(query_params),
+          JSON.stringify(request.headers),
+          request.body,
+      ], (err, res) => {
+          if (err) console.log(err);
+          else console.log("Entry inserted");
       });
+  
       response.end('OK');
+
     })
   })
 server.listen(port, (err) => {
