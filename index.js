@@ -1,14 +1,15 @@
 const Http = require('https');
 const fs = require('fs');
 
+const CFG = require("./config.js");
 
 const port = 3001;
 
 const options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
+	key  : fs.readFileSync(CFG.HTTPS.private_key),
+        ca   : fs.readFileSync(CFG.HTTPS.ca),
+        cert : fs.readFileSync(CFG.HTTPS.cert)
 };
-const CFG = require("./config.js");
 const mysql = require('mysql')
 const DBClient = mysql.createPool({
   connectionLimit : 10,
