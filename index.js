@@ -1,13 +1,21 @@
-const Http = require('http');
+const Http = require('https');
+const fs = require('fs');
+
+
 const port = 3001;
+
+const options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
 const CFG = require("./config.js");
 const mysql = require('mysql')
 const DBClient = mysql.createPool({
   connectionLimit : 10,
-  host: "karchnoe.francecentral.cloudapp.azure.com",
-  user: "jdarrort",
+  host: CFG.HOST,
+  user: CFG.USER,
   password: CFG.PWD,
-  database: 'jdarrort',
+  database: CFG.DB,
   dateStrings: true
 });
 
@@ -26,7 +34,7 @@ CREATE TABLE web_mock (
 */
 
 
-const server = Http.createServer((request, response) => {
+const server = Http.createServer(options, (request, response) => {
     request.body = "";
         // we can access HTTP headers
     request.on('data', chunk => {
