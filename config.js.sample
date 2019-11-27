@@ -1,0 +1,11 @@
+module.exports = {
+	HOST : "localhost", 
+	DB : "DBNAME", 
+	USER : "USER", 
+	PWD : "PWD",
+	HTTPS : {
+        	ca : "/PATH_TO/chain.pem",
+       		cert : "/PATH_TO/cert.pem",
+        	private_key : "/PATH_TO/privkey.pem"
+    	}
+}
