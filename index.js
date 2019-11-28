@@ -1,38 +1,26 @@
-const Http = require('https');
 const fs = require('fs');
-
 const CFG = require("./config.js");
 
-const port = 3001;
-
-const options = {
-	key  : fs.readFileSync(CFG.HTTPS.private_key),
-        ca   : fs.readFileSync(CFG.HTTPS.ca),
-        cert : fs.readFileSync(CFG.HTTPS.cert)
-};
 const mysql = require('mysql')
 const DBClient = mysql.createPool({
   connectionLimit : 10,
-  host: CFG.HOST,
-  user: CFG.USER,
-  password: CFG.PWD,
-  database: CFG.DB,
+  host: CFG.DB.HOST,
+  user: CFG.DB.USER,
+  password: CFG.DB.PWD,
+  database: CFG.DB.DBNAME,
   dateStrings: true
 });
 
-/*
-CREATE TABLE web_mock (
-  id int(10) unsigned NOT NULL AUTO_INCREMENT,
-	verb varchar(200),
-	url_path varchar(2000),
-	url_full_path varchar(2000),
-	query_params text,
-	headers text,
-	body text,
-  date_insert timestamp NOT NULL DEFAULT current_timestamp() ,
-  PRIMARY KEY (id)
-) ENGINE=MyISAM AUTO_INCREMENT=100 DEFAULT CHARSET=utf8mb4;
-*/
+
+const Http = CFG.HTTPS ? require('https') : require('http') ;
+var options = {};
+if (CFG.HTTPS) {
+  options = {
+          key  : fs.readFileSync(CFG.HTTPS.private_key),
+          ca   : fs.readFileSync(CFG.HTTPS.ca),
+          cert : fs.readFileSync(CFG.HTTPS.cert)
+  };
+}
 
 
 const server = Http.createServer(options, (request, response) => {
@@ -75,12 +63,12 @@ const server = Http.createServer(options, (request, response) => {
       response.end('OK');
     })
   })
-server.listen(port, (err) => {
+server.listen(CFG.PORT, (err) => {
   if (err) {
     return console.log('something bad happened', err)
   }
 
-  console.log(`server is listening on ${port}`)
+  console.log(`server is listening on ${CFG.PORT}`)
 })
 
 
